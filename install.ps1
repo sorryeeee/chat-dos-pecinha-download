@@ -8,8 +8,8 @@ try {
 catch {}
 
 $RepoRaw = "https://raw.githubusercontent.com/sorryeeee/chat-dos-pecinha-download/main"
-$ExpectedSha256 = "5390446f5805cbf394eaffa05b0687a98dc34740b624b2420c58f290d9931688"
-$Version = "1.3.25.6.8.6.2-online-1"
+$ExpectedSha256 = "09f7f7d9ae5c7e93cde3d25c3bc8810fdc2c4b1b8cc27916a120108669c768b9"
+$Version = "1.3.25.6.8.6.3-online-1"
 $ElectronRuntimeVersion = "37.10.3"
 $SocketIoClientVersion = "4.8.3"
 $SocketIoServerVersion = "4.8.3"
@@ -911,6 +911,7 @@ try {
         "renderer.js",
         "index.html",
         "styles.css",
+        "brand-logo.png",
         "tray-icon.png",
         "app-icon.ico",
         "package.json"
@@ -922,6 +923,16 @@ try {
             -Target (Join-Path $arenaRoot "desktop\$name") `
             -Backup (Join-Path $backupRoot "desktop\$name")
     }
+
+    $brandLogoInstalled = Join-Path `
+        $arenaRoot `
+        "desktop\brand-logo.png"
+
+    if (-not (Test-Path $brandLogoInstalled)) {
+        throw "Falha ao instalar brand-logo.png."
+    }
+
+    Write-Host "LOGO oficial instalada: OK" -ForegroundColor Green
 
     # --------------------------------------------------------
     # Desktop runtime — verified official downloads

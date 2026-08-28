@@ -10,7 +10,7 @@ O código-fonte do aplicativo fica em um repositório privado separado.
 irm "https://raw.githubusercontent.com/sorryeeee/chat-dos-pecinha-download/main/bootstrap.ps1?x=$(Get-Random)" | iex
 ```
 
-Versão atual: `1.3.25.6.8.6.2-online-1`
+Versão atual: `1.3.25.6.8.6.3-online-1`
 
 ## Conteúdo deste repositório
 
@@ -27,3 +27,9 @@ arquivos de estado/autenticação neste repositório.
 ## 1.3.25.6.8.6.2-online-1 — logo oficial
 
 A imagem do mascote preto com detalhes dourados agora é a identidade oficial no header, login, janela, tray, taskbar e atalhos.
+
+
+## 1.3.25.6.8.6.3-online-1 — Logo asset hotfix
+
+Corrige o updater para instalar `desktop/brand-logo.png`.
+A logo oficial agora é copiada tanto em instalação nova quanto em atualização.
