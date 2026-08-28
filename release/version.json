@@ -1,9 +1,9 @@
 {
-  "currentVersion": "1.3.25.6.8.6.6-online-1",
-  "minimumVersion": "1.3.25.6.8.6.6-online-1",
-  "protocolVersion": 13,
+  "currentVersion": "1.3.25.6.8.6.8-online-1",
+  "minimumVersion": "1.3.25.6.8.6.8-online-1",
+  "protocolVersion": 14,
   "message": "coe pecinha, versão incompatível atualiza essa porra ai",
-  "publishedAt": "2026-08-28T23:15:37.179560Z",
-  "sha256": "f4f71a605e0c8d8b41ea7e52a4835bb00501638029337ff437d89eb1aee477cd",
+  "publishedAt": "2026-08-28T23:29:12Z",
+  "sha256": "30af43e57a071a0cb32ba2fad3e9b8c59afac6185a65704b5472f89c13ddc320",
   "bootstrap": "https://raw.githubusercontent.com/sorryeeee/chat-dos-pecinha-download/main/bootstrap.ps1"
 }
