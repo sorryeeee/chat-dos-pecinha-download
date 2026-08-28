@@ -1,0 +1,12 @@
+# Nunca publicar segredos locais
+profile-auth.json
+profile-sessions.json
+SENHAS-ARENA-SQUAD*.txt
+*.log
+profile-activity.json
+profile-presence.json
+node_modules/
+audio-deps/
+arena-runtime-security.json
+backup-online-*/
+start-arena-server-hidden.vbs
