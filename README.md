@@ -10,7 +10,7 @@ O código-fonte do aplicativo fica em um repositório privado separado.
 irm "https://raw.githubusercontent.com/sorryeeee/chat-dos-pecinha-download/main/bootstrap.ps1?x=$(Get-Random)" | iex
 ```
 
-Versão atual: `1.3.25.6.8.6.6-online-1`
+Versão atual: `1.3.25.6.8.6.8-online-1`
 
 ## Conteúdo deste repositório
 
@@ -44,10 +44,29 @@ Tray, janela e atalho continuam usando os assets PNG/ICO locais.
 
 ## Atualização automática
 
-Versão obrigatória: `1.3.25.6.8.6.5-online-1`. O HOST consulta `release/version.json` e avisa clientes em tempo real.
+Versão obrigatória: `1.3.25.6.8.6.8-online-1`. O HOST consulta `release/version.json` e avisa clientes em tempo real.
 
 
 ## 1.3.25.6.8.6.6-online-1
 
 Metadados de versão dos demais clientes são exibidos somente para o admin.
 O mecanismo de atualização automática continua igual para todos.
+
+
+## 1.3.25.6.8.6.7-online-1
+
+- corrige o updater obrigatório quando o `version.json` do Git estiver atrasado;
+- o HOST nunca mais permite que o Git reduza a versão/protocolo mínimos;
+- a versão instalada no HOST é sempre um piso de compatibilidade;
+- clientes antigos recebem `version-policy` e `force-update`;
+- o manifesto é consultado a cada nova conexão e novamente a cada 10 segundos;
+- cliente incompatível é bloqueado/desconectado após 2,5 segundos;
+- `sorrye` continua sendo o único perfil que vê as versões dos demais clientes.
+
+
+## 1.3.25.6.8.6.8-online-1
+
+- corrige o botão de atualização automática que em alguns PCs apenas fechava o app;
+- `bootstrap.ps1` agora pede elevação imediatamente e deixa download/instalação no processo elevado independente;
+- o `main.js` novo aguarda a criação real do instalador elevado antes de fechar o Electron;
+- cancelamento do UAC ou falha ao iniciar mantém o app aberto e exibe o erro.

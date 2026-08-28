@@ -1,19 +1,69 @@
 $ErrorActionPreference = "Stop"
 
+try {
+    [Net.ServicePointManager]::SecurityProtocol = (
+        [Net.SecurityProtocolType]::Tls12
+    )
+}
+catch {}
+
+# Keep bootstrap intentionally tiny/fast. Old clients close Electron only
+# ~700 ms after launching this script, so DO NOT download install.ps1 in
+# this non-elevated process. Ask Windows for an independent elevated
+# PowerShell immediately; that process survives after the old app exits
+# and performs the network download itself.
 $CacheBust = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
-$Url = (
+$InstallerUrl = (
     "https://raw.githubusercontent.com/" +
     "sorryeeee/chat-dos-pecinha-download/main/install.ps1?x=" +
     $CacheBust
 )
 
-$File = Join-Path `
-    $env:TEMP `
-    "arena-squad-online-install.ps1"
-
 $InstallerLog = Join-Path `
     $env:TEMP `
     "arena-squad-install.log"
+
+$ElevatedCommand = @'
+$ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
+try {
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+} catch {}
+$InstallerUrl = "__INSTALLER_URL__"
+$InstallerFile = Join-Path $env:TEMP ("chat-dos-pecinha-install-" + [Guid]::NewGuid().ToString("N") + ".ps1")
+try {
+    Invoke-WebRequest -Uri $InstallerUrl -OutFile $InstallerFile -UseBasicParsing -Headers @{ "Cache-Control" = "no-cache"; "Pragma" = "no-cache" }
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $InstallerFile
+    if ($LASTEXITCODE -ne 0) {
+        throw ("Instalador terminou com codigo " + $LASTEXITCODE + ".")
+    }
+}
+catch {
+    Write-Host ""
+    Write-Host "===== ERRO REAL DO ATUALIZADOR =====" -ForegroundColor Red
+    Write-Host $_.Exception.Message -ForegroundColor Red
+    $log = Join-Path $env:TEMP "arena-squad-install.log"
+    if (Test-Path $log) {
+        Write-Host ""
+        Get-Content $log -Tail 80
+    }
+    Write-Host "====================================" -ForegroundColor Red
+    Read-Host "Pressione ENTER para fechar"
+    exit 1
+}
+finally {
+    Remove-Item -Force $InstallerFile -ErrorAction SilentlyContinue
+}
+'@
+
+$ElevatedCommand = $ElevatedCommand.Replace(
+    "__INSTALLER_URL__",
+    $InstallerUrl.Replace('"', '`"')
+)
+
+$Encoded = [Convert]::ToBase64String(
+    [Text.Encoding]::Unicode.GetBytes($ElevatedCommand)
+)
 
 try {
     Remove-Item `
@@ -21,58 +71,31 @@ try {
         $InstallerLog `
         -ErrorAction SilentlyContinue
 
-    Invoke-WebRequest `
-        -Uri $Url `
-        -OutFile $File `
-        -UseBasicParsing `
-        -Headers @{
-            "Cache-Control" = "no-cache"
-            "Pragma" = "no-cache"
-        }
-
-    $args = @(
-        "-NoProfile",
-        "-ExecutionPolicy", "Bypass",
-        "-File", "`"$File`""
-    ) -join " "
-
+    # RunAs is intentionally the FIRST expensive action. Once UAC is
+    # accepted, the elevated PowerShell is no longer tied to Electron.
     $process = Start-Process `
-        powershell.exe `
+        -FilePath "powershell.exe" `
         -Verb RunAs `
-        -Wait `
         -PassThru `
-        -ArgumentList $args
-
-    if ($process.ExitCode -ne 0) {
-        Write-Host ""
-        Write-Host "===== ERRO REAL DO INSTALADOR =====" `
-            -ForegroundColor Red
-
-        if (Test-Path $InstallerLog) {
-            Get-Content `
-                $InstallerLog `
-                -Tail 80
-        }
-        else {
-            Write-Host (
-                "Log do instalador nao foi criado: " +
-                $InstallerLog
-            )
-        }
-
-        Write-Host "===================================" `
-            -ForegroundColor Red
-
-        throw (
-            "Instalador terminou com codigo " +
-            $process.ExitCode +
-            "."
+        -ArgumentList @(
+            "-NoLogo",
+            "-NoProfile",
+            "-ExecutionPolicy", "Bypass",
+            "-EncodedCommand", $Encoded
         )
+
+    if (-not $process -or $process.Id -le 0) {
+        throw "Nao foi possivel iniciar o atualizador elevado."
     }
+
+    Write-Host (
+        "Atualizador elevado iniciado. PID: " +
+        $process.Id
+    ) -ForegroundColor Green
 }
-finally {
-    Remove-Item `
-        -Force `
-        $File `
-        -ErrorAction SilentlyContinue
+catch {
+    Write-Host ""
+    Write-Host "Falha ao abrir o atualizador:" -ForegroundColor Red
+    Write-Host $_.Exception.Message -ForegroundColor Red
+    throw
 }

@@ -8,8 +8,8 @@ try {
 catch {}
 
 $RepoRaw = "https://raw.githubusercontent.com/sorryeeee/chat-dos-pecinha-download/main"
-$ExpectedSha256 = "f4f71a605e0c8d8b41ea7e52a4835bb00501638029337ff437d89eb1aee477cd"
-$Version = "1.3.25.6.8.6.6-online-1"
+$ExpectedSha256 = "30af43e57a071a0cb32ba2fad3e9b8c59afac6185a65704b5472f89c13ddc320"
+$Version = "1.3.25.6.8.6.8-online-1"
 $ElectronRuntimeVersion = "37.10.3"
 $SocketIoClientVersion = "4.8.3"
 $SocketIoServerVersion = "4.8.3"
