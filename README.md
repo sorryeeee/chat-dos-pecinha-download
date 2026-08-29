@@ -10,7 +10,7 @@ O código-fonte do aplicativo fica em um repositório privado separado.
 irm "https://raw.githubusercontent.com/sorryeeee/chat-dos-pecinha-download/main/bootstrap.ps1?x=$(Get-Random)" | iex
 ```
 
-Versão atual: `1.3.25.6.8.6.8-online-1`
+Versão atual: `1.3.25.6.8.6.9-online-1`
 
 ## Conteúdo deste repositório
 
@@ -44,7 +44,7 @@ Tray, janela e atalho continuam usando os assets PNG/ICO locais.
 
 ## Atualização automática
 
-Versão obrigatória: `1.3.25.6.8.6.8-online-1`. O HOST consulta `release/version.json` e avisa clientes em tempo real.
+Versão obrigatória: `1.3.25.6.8.6.9-online-1`. O HOST consulta `release/version.json` e avisa clientes em tempo real.
 
 
 ## 1.3.25.6.8.6.6-online-1
@@ -64,7 +64,7 @@ O mecanismo de atualização automática continua igual para todos.
 - `sorrye` continua sendo o único perfil que vê as versões dos demais clientes.
 
 
-## 1.3.25.6.8.6.8-online-1
+## 1.3.25.6.8.6.9-online-1
 
 - corrige o botão de atualização automática que em alguns PCs apenas fechava o app;
 - `bootstrap.ps1` agora pede elevação imediatamente e deixa download/instalação no processo elevado independente;
