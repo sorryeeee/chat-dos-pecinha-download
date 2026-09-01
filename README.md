@@ -4,13 +4,22 @@ Repositório público **somente para instalação e atualização**.
 
 O código-fonte do aplicativo fica em um repositório privado separado.
 
+## Hotfix do instalador — validação da Voice Call
+
+- remove a checagem frágil pelo texto antigo `Sala de voz da Squad`;
+- valida os IDs estruturais reais da Voice Call no HTML;
+- valida `voice-join`, `voice-leave` e `joinVoiceCall` no renderer;
+- valida também o SHA de `desktop/package.json` e confirma a versão instalada.
+- não altera a versão do app: continua `1.3.25.6.8.6.10-online-1`.
+
+
 ## Instalar / atualizar
 
 ```powershell
 irm "https://raw.githubusercontent.com/sorryeeee/chat-dos-pecinha-download/main/bootstrap.ps1?x=$(Get-Random)" | iex
 ```
 
-Versão atual: `1.3.25.6.8.6.9-online-1`
+Versão atual: `1.3.25.6.8.6.10-online-1`
 
 ## Conteúdo deste repositório
 
@@ -44,7 +53,7 @@ Tray, janela e atalho continuam usando os assets PNG/ICO locais.
 
 ## Atualização automática
 
-Versão obrigatória: `1.3.25.6.8.6.9-online-1`. O HOST consulta `release/version.json` e avisa clientes em tempo real.
+Versão obrigatória: `1.3.25.6.8.6.10-online-1`. O HOST consulta `release/version.json` e avisa clientes em tempo real.
 
 
 ## 1.3.25.6.8.6.6-online-1
@@ -64,9 +73,14 @@ O mecanismo de atualização automática continua igual para todos.
 - `sorrye` continua sendo o único perfil que vê as versões dos demais clientes.
 
 
-## 1.3.25.6.8.6.9-online-1
+## 1.3.25.6.8.6.10-online-1
 
 - corrige o botão de atualização automática que em alguns PCs apenas fechava o app;
 - `bootstrap.ps1` agora pede elevação imediatamente e deixa download/instalação no processo elevado independente;
 - o `main.js` novo aguarda a criação real do instalador elevado antes de fechar o Electron;
 - cancelamento do UAC ou falha ao iniciar mantém o app aberto e exibe o erro.
+
+
+## Cloud Ready
+
+A partir desta versão o cliente aceita `https://`/`wss://` e pode migrar para VPS sem Tailscale. `switch-to-cloud.ps1` troca o `config.json` para a URL Cloud e desativa o HOST local quando necessário.

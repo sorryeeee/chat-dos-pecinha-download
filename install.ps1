@@ -8,8 +8,8 @@ try {
 catch {}
 
 $RepoRaw = "https://raw.githubusercontent.com/sorryeeee/chat-dos-pecinha-download/main"
-$ExpectedSha256 = "9040cfb1a68f1bb620a795db26f5a434effe82e3832ec71dcb45677de1ed7b6b"
-$Version = "1.3.25.6.8.6.9-online-1"
+$ExpectedSha256 = "cfbaa4bbed6be443fc68c5eb7cebc767282d81723aaa71f027c329ae535ca6db"
+$Version = "1.3.25.6.8.6.10-online-1"
 $ElectronRuntimeVersion = "37.10.3"
 $SocketIoClientVersion = "4.8.3"
 $SocketIoServerVersion = "4.8.3"
@@ -191,6 +191,40 @@ function Test-TailscaleIPv4 {
         $bytes[1] -ge 64 -and
         $bytes[1] -le 127
     )
+}
+
+function Get-CloudServerOrigin {
+    param(
+        [string]$Value
+    )
+
+    if (-not $Value) {
+        return $null
+    }
+
+    try {
+        $uri = [Uri]([string]$Value).Trim()
+
+        if (
+            $uri.Scheme -ne "https" -or
+            $uri.UserInfo -or
+            $uri.Query -or
+            $uri.Fragment -or
+            ($uri.AbsolutePath -and $uri.AbsolutePath -ne "/") -or
+            -not $uri.Host
+        ) {
+            return $null
+        }
+
+        if ($uri.IsDefaultPort -or $uri.Port -eq 443) {
+            return "https://" + $uri.Host
+        }
+
+        return $null
+    }
+    catch {
+        return $null
+    }
 }
 
 function Normalize-HostInput {
@@ -393,89 +427,103 @@ if (-not $arenaRoot) {
             "http://localhost:3000"
     }
     else {
-        $tailscaleExe =
-            Ensure-Tailscale
+        $cloudInput = Read-Host "Cole a URL HTTPS do CLOUD ou pressione ENTER para usar Tailscale"
+        $cloudOrigin = Get-CloudServerOrigin $cloudInput
 
-        if ($tailscaleExe) {
-            $localTailscaleIP =
-                $null
+        if ($cloudInput -and -not $cloudOrigin) {
+            throw "URL CLOUD invalida. Use algo como https://203-0-113-10.sslip.io"
+        }
 
-            try {
-                $oldErrorPreference =
-                    $ErrorActionPreference
+        if ($cloudOrigin) {
+            $freshServerUrl = $cloudOrigin
+            Write-Host ("Cloud configurada: " + $freshServerUrl) -ForegroundColor Green
+        }
+        else {
+            $tailscaleExe =
+                Ensure-Tailscale
 
-                $ErrorActionPreference =
-                    "SilentlyContinue"
+            if ($tailscaleExe) {
+                $localTailscaleIP =
+                    $null
 
-                $localTailscaleIP = @(
-                    & $tailscaleExe `
-                        ip `
-                        -4 `
-                        2>$null
-                ) |
-                Where-Object {
-                    Test-TailscaleIPv4 `
-                        ([string]$_).Trim()
-                } |
-                Select-Object -First 1
-
-                $ErrorActionPreference =
-                    $oldErrorPreference
-            }
-            catch {
                 try {
+                    $oldErrorPreference =
+                        $ErrorActionPreference
+
+                    $ErrorActionPreference =
+                        "SilentlyContinue"
+
+                    $localTailscaleIP = @(
+                        & $tailscaleExe `
+                            ip `
+                            -4 `
+                            2>$null
+                    ) |
+                    Where-Object {
+                        Test-TailscaleIPv4 `
+                            ([string]$_).Trim()
+                    } |
+                    Select-Object -First 1
+
                     $ErrorActionPreference =
                         $oldErrorPreference
                 }
-                catch {}
+                catch {
+                    try {
+                        $ErrorActionPreference =
+                            $oldErrorPreference
+                    }
+                    catch {}
 
-                $localTailscaleIP =
-                    $null
+                    $localTailscaleIP =
+                        $null
+                }
+
+                if ($localTailscaleIP) {
+                    Write-Host (
+                        "Tailscale local: " +
+                        ([string]$localTailscaleIP).Trim()
+                    ) -ForegroundColor Green
+                }
+                else {
+                    Write-Warning (
+                        "Tailscale esta instalado, mas ainda nao esta conectado/logado. " +
+                        "A instalacao vai continuar normalmente."
+                    )
+                }
             }
 
-            if ($localTailscaleIP) {
-                Write-Host (
-                    "Tailscale local: " +
-                    ([string]$localTailscaleIP).Trim()
-                ) -ForegroundColor Green
+            $hostIp = $null
+
+            while (-not $hostIp) {
+                $rawHost = Read-Host `
+                    "Digite o IP Tailscale do HOST (ex: 100.83.252.0)"
+
+                $candidate =
+                    Normalize-HostInput `
+                        $rawHost
+
+                if (
+                    Test-TailscaleIPv4 `
+                        $candidate
+                ) {
+                    $hostIp =
+                        $candidate.Trim()
+                }
+                else {
+                    Write-Host (
+                        "IP invalido. Use o IP Tailscale 100.x do HOST."
+                    ) -ForegroundColor Yellow
+                }
             }
-            else {
-                Write-Warning (
-                    "Tailscale esta instalado, mas ainda nao esta conectado/logado. " +
-                    "A instalacao vai continuar normalmente."
-                )
-            }
+
+            $freshServerUrl = (
+                "http://" +
+                $hostIp +
+                ":3000"
+            )
+        
         }
-
-        $hostIp = $null
-
-        while (-not $hostIp) {
-            $rawHost = Read-Host `
-                "Digite o IP Tailscale do HOST (ex: 100.83.252.0)"
-
-            $candidate =
-                Normalize-HostInput `
-                    $rawHost
-
-            if (
-                Test-TailscaleIPv4 `
-                    $candidate
-            ) {
-                $hostIp =
-                    $candidate.Trim()
-            }
-            else {
-                Write-Host (
-                    "IP invalido. Use o IP Tailscale 100.x do HOST."
-                ) -ForegroundColor Yellow
-            }
-        }
-
-        $freshServerUrl = (
-            "http://" +
-            $hostIp +
-            ":3000"
-        )
     }
 
     @{
@@ -545,9 +593,13 @@ else {
                 $uri.Scheme -eq "http" -and
                 $uri.Port -eq 3000
 
+            $validCloudHost =
+                !!(Get-CloudServerOrigin $serverUrl)
+
             if (
                 -not $validLocalHost -and
-                -not $validTailscaleHost
+                -not $validTailscaleHost -and
+                -not $validCloudHost
             ) {
                 $configNeedsRepair =
                     $true
@@ -610,34 +662,23 @@ else {
                 "Configuracao do HOST ausente ou invalida."
             )
 
-            $hostIp = $null
+            $serverUrl = $null
 
-            while (-not $hostIp) {
-                $rawHost = Read-Host `
-                    "Digite o IP Tailscale do HOST (ex: 100.83.252.0)"
+            while (-not $serverUrl) {
+                $rawHost = Read-Host "Cole a URL HTTPS do CLOUD ou o IP Tailscale do HOST"
+                $cloudOrigin = Get-CloudServerOrigin $rawHost
+                $candidate = Normalize-HostInput $rawHost
 
-                $candidate =
-                    Normalize-HostInput `
-                        $rawHost
-
-                if (
-                    Test-TailscaleIPv4 `
-                        $candidate
-                ) {
-                    $hostIp =
-                        $candidate.Trim()
+                if ($cloudOrigin) {
+                    $serverUrl = $cloudOrigin
+                }
+                elseif (Test-TailscaleIPv4 $candidate) {
+                    $serverUrl = "http://" + $candidate.Trim() + ":3000"
                 }
                 else {
-                    Write-Host (
-                        "IP invalido. Use o IP Tailscale 100.x do HOST."
-                    ) -ForegroundColor Yellow
+                    Write-Host "Valor invalido. Use https://DOMINIO ou um IP Tailscale 100.x." -ForegroundColor Yellow
                 }
             }
-
-            $serverUrl =
-                "http://" +
-                $hostIp +
-                ":3000"
 
             @{
                 serverUrl = $serverUrl
@@ -647,18 +688,20 @@ else {
                 -Path $configPath `
                 -Encoding UTF8
 
-            $serverHost =
-                $hostIp
+            $serverHost = ([Uri]$serverUrl).Host
 
             Write-Host (
                 "config.json do CLIENTE reparado."
             ) -ForegroundColor Green
         }
 
-        # Best-effort informational check only.
-        # A logged-out Tailscale MUST NOT abort installation/update.
-        $tailscaleExe =
-            Get-TailscaleExe
+        $usingCloud = !!(Get-CloudServerOrigin $serverUrl)
+
+        # Best-effort informational check only for legacy clients.
+        # Cloud clients do not need Tailscale at all.
+        if (-not $usingCloud) {
+            $tailscaleExe =
+                Get-TailscaleExe
 
         if (-not $tailscaleExe) {
             Write-Warning (
@@ -715,6 +758,10 @@ else {
                     "A instalacao vai continuar. Entre no Tailscale antes de abrir o Chat dos Pecinha."
                 )
             }
+        }
+        }
+        else {
+            Write-Host ("Cloud ativa: " + $serverUrl) -ForegroundColor Green
         }
     }
 }
@@ -2453,7 +2500,8 @@ WScript.Quit code
 
     if (
         $freshInstall -and
-        -not $isHost
+        -not $isHost -and
+        -not (Get-CloudServerOrigin $freshServerUrl)
     ) {
         $tailscaleAfter =
             Get-TailscaleExe
