@@ -8,8 +8,8 @@ try {
 catch {}
 
 $RepoRaw = "https://raw.githubusercontent.com/sorryeeee/chat-dos-pecinha-download/main"
-$ExpectedSha256 = "cfbaa4bbed6be443fc68c5eb7cebc767282d81723aaa71f027c329ae535ca6db"
-$Version = "1.3.25.6.8.6.10-online-1"
+$ExpectedSha256 = "63370142297910a561db846c7a4d1ee726d119fd83c9c6eed6bde59ea9327b27"
+$Version = "1.3.25.6.8.6.11-online-1"
 $ElectronRuntimeVersion = "37.10.3"
 $SocketIoClientVersion = "4.8.3"
 $SocketIoServerVersion = "4.8.3"
@@ -961,7 +961,8 @@ try {
         "brand-logo.png",
         "tray-icon.png",
         "app-icon.ico",
-        "package.json"
+        "package.json",
+        "uninstall-retirement.ps1"
     )
 
     foreach ($name in $desktopFiles) {
@@ -2094,6 +2095,11 @@ WScript.Quit code
             Name = "desktop\package.json"
             Source = Join-Path $extractPath "payload\desktop\package.json"
             Target = Join-Path $arenaRoot "desktop\package.json"
+        },
+        @{
+            Name = "desktop\uninstall-retirement.ps1"
+            Source = Join-Path $extractPath "payload\desktop\uninstall-retirement.ps1"
+            Target = Join-Path $arenaRoot "desktop\uninstall-retirement.ps1"
         }
     )
 
